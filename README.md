@@ -1,1 +1,1 @@
-smcdatabase
+smcdatabase.vercel.app
