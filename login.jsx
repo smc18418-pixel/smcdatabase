@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { supabase } from "./supabaseClient";
 
-export default function Login({ setRole }) {
+export default function Login({ setRole, setUser }) {
   const [membershipCode, setMembershipCode] = useState("");
   const [password, setPassword] = useState("");
 
@@ -24,7 +24,8 @@ export default function Login({ setRole }) {
       return;
     }
 
-    setRole(data.rank); // يحدد نوع الدخول (مسؤول / مشرف / ساموراي)
+    setRole(data.rank);
+    setUser(data);
   };
 
   return (
