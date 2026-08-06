@@ -1,0 +1,9 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ممكن تضيف أي تنسيقات إضافية هنا */
+body {
+  font-family: 'Arial', sans-serif;
+}
