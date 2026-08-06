@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نادي الرجال السري - SMC</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #050505;
+            color: #e5e7eb;
+            font-family: 'Tajawal', sans-serif;
+            background-image: radial-gradient(circle, rgba(20,0,0,0.8) 0%, rgba(5,5,5,1) 100%);
+            min-height: 100vh;
+        }
+        .bg-logo-watermark {
+            background-image: url('1000282954.jpg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 400px;
+            opacity: 0.95;
+        }
+        .glass-panel {
+            background: rgba(15, 15, 15, 0.90);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            box-shadow: 0 0 25px rgba(220, 38, 38, 0.15);
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body class="bg-logo-watermark flex flex-col justify-between">
+
+    <!-- الهيدر الثابت -->
+    <header class="w-full bg-black/90 border-b-4 border-red-700 py-4 px-6 shadow-2xl flex justify-between items-center z-50">
+        <div class="flex items-center space-x-4 space-x-reverse">
+            <img src="1000282954.jpg" alt="شعار SMC" class="w-12 h-12 rounded-full border-2 border-red-600 object-cover shadow-lg shadow-red-900/50">
+            <div>
+                <h1 class="text-xl font-black tracking-wider text-white">نادي الرجال السري <span class="text-red-600">(SMC)</span></h1>
+                <p class="text-xs text-gray-400">قاعدة بيانات الأعضاء الرسمية</p>
+            </div>
+        </div>
+        <div id="nav-user-info" class="hidden flex items-center space-x-4 space-x-reverse">
+            <span id="header-user-badge" class="text-xs bg-red-950 border border-red-600 text-red-200 px-3 py-1 rounded-full font-bold"></span>
+            <button onclick="logout()" class="bg-red-700 hover:bg-red-800 text-white text-xs px-4 py-2 rounded font-bold transition">تسجيل خروج</button>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="container mx-auto px-4 py-8 flex-grow flex items-center justify-center">
+
+        <!-- 1. شاشة تسجيل الدخول العامة -->
+        <div id="login-screen" class="w-full max-w-md glass-panel p-8 rounded-xl shadow-2xl">
+            <div class="text-center mb-6">
+                <img src="1000282954.jpg" class="w-20 h-20 mx-auto rounded-full border-2 border-red-600 mb-3 shadow-lg shadow-red-900/40">
+                <h2 class="text-2xl font-black text-white">تسجيل الدخول للنظام</h2>
+                <p class="text-xs text-gray-400 mt-1">الرجاء إدخال بيانات الاعتماد الخاصة برتبتك</p>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">رمز العضوية</label>
+                    <input type="text" id="login-membership" required placeholder="مثال: SMC-000001-A-SA" class="w-full bg-black/60 border border-gray-700 rounded p-3 text-sm text-white focus:border-red-600 focus:outline-none uppercase">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">كلمة السر</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-black/60 border border-gray-700 rounded p-3 text-sm text-white focus:border-red-600 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded transition shadow-lg shadow-red-900/50">دخول للنظام</button>
+            </form>
+            <div id="login-error" class="mt-4 text-center text-red-500 text-xs font-bold hidden"></div>
+        </div>
+
+        <!-- 2. لوحة تحكم المسؤول -->
+        <div id="admin-dashboard" class="w-full hidden space-y-6">
+            <div class="glass-panel p-6 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white" id="admin-welcome-name">مرحباً، المسؤول</h2>
+                    <p class="text-xs text-red-400 font-mono mt-1" id="admin-welcome-code"></p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openRegisterModal()" class="bg-red-700 hover:bg-red-800 text-white text-xs px-4 py-2.5 rounded font-bold transition shadow">تسجيل عضو جديد</button>
+                    <button onclick="loadMembersTable()" class="bg-gray-800 hover:bg-700 text-white text-xs px-4 py-2.5 rounded font-bold transition border border-gray-700">تحديث القائمة</button>
+                </div>
+            </div>
+
+            <!-- شريط البحث -->
+            <div class="glass-panel p-4 rounded-xl flex gap-4">
+                <input type="text" id="admin-search-input" placeholder="ابحث بالاسم أو رمز العضوية..." class="flex-grow bg-black/60 border border-gray-700 rounded p-2.5 text-sm text-white focus:border-red-600 focus:outline-none" oninput="filterAdminTable()">
+            </div>
+
+            <!-- جدول الأعضاء -->
+            <div class="glass-panel rounded-xl overflow-hidden shadow-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-red-950/80 text-red-200 border-b border-red-900">
+                            <tr>
+                                <th class="p-3">رمز العضوية</th>
+                                <th class="p-3">الاسم</th>
+                                <th class="p-3">رقم الهاتف</th>
+                                <th class="p-3">السكن</th>
+                                <th class="p-3">الروابط</th>
+                                <th class="p-3">الحالة</th>
+                                <th class="p-3">مسجل بواسطة</th>
+                                <th class="p-3">التسجيل</th>
+                                <th class="p-3">الانتهاء</th>
+                                <th class="p-3 text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="members-table-body" class="divide-y divide-gray-800">
+                            <!-- يتم تعبئتها ديناميكياً -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. لوحة تحكم المشرف -->
+        <div id="supervisor-dashboard" class="w-full max-w-4xl hidden space-y-6">
+            <div class="glass-panel p-6 rounded-xl text-center">
+                <h2 class="text-xl font-bold text-white">لوحة تحكم المشرف</h2>
+                <p class="text-xs text-gray-400 mt-1" id="supervisor-info"></p>
+            </div>
+            <div class="glass-panel p-6 rounded-xl space-y-4">
+                <div class="flex gap-2">
+                    <input type="text" id="sup-search-input" placeholder="ابحث باسم العضو أو رمز العضوية..." class="flex-grow bg-black/60 border border-gray-700 rounded p-3 text-sm text-white focus:border-red-600 focus:outline-none">
+                    <button onclick="supervisorSearch()" class="bg-red-700 hover:bg-red-800 text-white px-6 py-3 rounded font-bold text-sm transition">بحث</button>
+                </div>
+                <div id="sup-search-results" class="mt-4 space-y-3"></div>
+            </div>
+        </div>
+
+        <!-- 4. لوحة تحكم الساموراي -->
+        <div id="samurai-dashboard" class="w-full max-w-4xl hidden space-y-6">
+            <div class="glass-panel p-6 rounded-xl text-center">
+                <h2 class="text-xl font-bold text-white">لوحة تحكم الساموراي</h2>
+                <p class="text-xs text-gray-400 mt-1" id="samurai-info"></p>
+            </div>
+            <div class="glass-panel p-6 rounded-xl space-y-4">
+                <div class="flex gap-2">
+                    <input type="text" id="sam-search-input" placeholder="ابحث باسم العضو أو رمز العضوية..." class="flex-grow bg-black/60 border border-gray-700 rounded p-3 text-sm text-white focus:border-red-600 focus:outline-none">
+                    <button onclick="samuraiSearch()" class="bg-red-700 hover:bg-red-800 text-white px-6 py-3 rounded font-bold text-sm transition">بحث</button>
+                </div>
+                <div id="sam-search-results" class="mt-4 space-y-3"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal تسجيل عضو جديد -->
+    <div id="register-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="glass-panel w-full max-w-lg p-6 rounded-xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold text-white border-b border-red-900 pb-2">تسجيل عضو جديد في النادي</h3>
+            <form id="new-member-form" onsubmit="registerNewMember(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-gray-300 font-bold mb-1">الاسم الكامل</label>
+                    <input type="text" id="reg-name" required class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-gray-300 font-bold mb-1">رقم الهاتف</label>
+                    <input type="text" id="reg-phone" required class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-gray-300 font-bold mb-1">السكن</label>
+                    <input type="text" id="reg-address" required class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-gray-300 font-bold mb-1">رابط حساب الفيسبوك</label>
+                    <input type="url" id="reg-fb" required class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-gray-300 font-bold mb-1">رابط حساب الساموراي (إن وجد)</label>
+                    <input type="url" id="reg-sam-fb" placeholder="اختياري للرتب التي تتطلب ساموراي" class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-gray-300 font-bold mb-1">الرتبة</label>
+                    <select id="reg-role" class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
+                        <option value="مسؤول . ساموراي">مسؤول . ساموراي (A-SA)</option>
+                        <option value="مسؤول . ساموراي سابق">مسؤول . ساموراي سابق (A-SAF)</option>
+                        <option value="مسؤول">مسؤول (A)</option>
+                        <option value="مشرف . ساموراي">مشرف . ساموراي (S-SA)</option>
+                        <option value="مشرف . ساموراي سابق">مشرف . ساموراي سابق (S-SAF)</option>
+                        <option value="مشرف">مشرف (S)</option>
+                        <option value="مسؤول سابق . ساموراي">مسؤول سابق . ساموراي (AF-SA)</option>
+                        <option value="مشرف سابق . ساموراي">مشرف سابق . ساموراي (SF-SA)</option>
+                        <option value="ساموراي">ساموراي (SA)</option>
+                        <option value="مسؤول سابق . ساموراي سابق">مسؤول سابق . ساموراي سابق (AF-SAF)</option>
+                        <option value="مشرف سابق . ساموراي سابق">مشرف سابق . ساموراي سابق (SF-SAF)</option>
+                        <option value="مسؤول سابق">مسؤول سابق (AF)</option>
+                        <option value="مشرف سابق">مشرف سابق (SF)</option>
+                        <option value="ساموراي سابق">ساموراي سابق (SAF)</option>
+                        <option value="عضو" selected>عضو (M)</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeRegisterModal()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded">إلغاء</button>
+                    <button type="submit" class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded font-bold">حفظ وتسجيل</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- الفوتر الثابت -->
+    <footer class="w-full bg-black/90 border-t border-red-900/50 py-3 text-center text-xs text-gray-500 z-50">
+        جميع الحقوق محفوظة © نادي الرجال السري (SMC) 2026
+    </footer>
+
+    <!-- سكربت الربط وتشغيل المنظومة -->
+    <script>
+        // إعدادات اتصال Supabase
+        const SUPABASE_URL = 'https://mltfdadqekeuleimreva.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sdGZkYWRxZWtldWxlaW1yZXZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMTMyNTMsImV4cCI6MjEwMTU4OTI1M30.SF3eoQLJGZsAyOsGmv_XalmJrkLHRqvP-hC99OLpTBg';
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+        let allMembersCache = [];
+
+        // خريطة الرموز حسب الرتب
+        const roleCodes = {
+            "مسؤول . ساموراي": "A-SA",
+            "مسؤول . ساموراي سابق": "A-SAF",
+            "مسؤول": "A",
+            "مشرف . ساموراي": "S-SA",
+            "مشرف . ساموراي سابق": "S-SAF",
+            "مشرف": "S",
+            "مسؤول سابق . ساموراي": "AF-SA",
+            "مشرف سابق . ساموراي": "SF-SA",
+            "ساموراي": "SA",
+            "مسؤول سابق . ساموراي سابق": "AF-SAF",
+            "مشرف سابق . ساموراي سابق": "SF-SAF",
+            "مسؤول سابق": "AF",
+            "مشرف سابق": "SF",
+            "ساموراي سابق": "SAF",
+            "عضو": "M"
+        };
+
+        // تسجيل الدخول
+        async function handleLogin(e) {
+            e.preventDefault();
+            const membershipInput = document.getElementById('login-membership').value.trim().toUpperCase();
+            const passwordInput = document.getElementById('login-password').value;
+            const errorEl = document.getElementById('login-error');
+
+            const { data, error } = await _supabase
+                .from('smc_members')
+                .select('*')
+                .eq('membership_number', membershipInput)
+                .single();
+
+            if (error || !data) {
+                errorEl.textContent = 'رمز العضوية غير موجود أو خطأ في البيانات!';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            if (data.password !== passwordInput) {
+                errorEl.textContent = 'كلمة السر غير صحيحة!';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            if (data.status === 'محظور' || data.status === 'مجمد') {
+                errorEl.textContent = 'عذراً، عضويتك غير نشطة أو محظورة ولا يمكنك الدخول!';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            currentUser = data;
+            routeUserDashboard();
+        }
+
+        // توجيه المستخدم حسب الصلاحيات والردع
+        function routeUserDashboard() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('nav-user-info').classList.remove('hidden');
+            document.getElementById('header-user-badge').textContent = `${currentUser.full_name} (${currentUser.role})`;
+
+            const role = currentUser.role;
+
+            // صلاحيات المسؤول
+            const allowedAdminRoles = ["مسؤول . ساموراي", "مسؤول . ساموراي سابق", "مسؤول"];
+            if (allowedAdminRoles.includes(role)) {
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+                document.getElementById('admin-welcome-name').textContent = `مرحباً بك، ${currentUser.full_name}`;
+                document.getElementById('admin-welcome-code').textContent = `رقم العضوية: ${currentUser.membership_number} | الرتبة: ${role}`;
+                loadMembersTable();
+                return;
+            }
+
+            // صلاحيات المشرف
+            const allowedSupervisorRoles = ["مشرف . ساموراي", "مشرف . ساموراي سابق", "مشرف"];
+            if (allowedSupervisorRoles.includes(role)) {
+                document.getElementById('supervisor-dashboard').classList.remove('hidden');
+                document.getElementById('supervisor-info').textContent = `المشرف: ${currentUser.full_name} | ${currentUser.membership_number}`;
+                return;
+            }
+
+            // صلاحيات الساموراي
+            const allowedSamuraiRoles = ["مسؤول سابق . ساموراي", "مشرف سابق . ساموراي", "ساموراي"];
+            if (allowedSamuraiRoles.includes(role)) {
+                document.getElementById('samurai-dashboard').classList.remove('hidden');
+                document.getElementById('samurai-info').textContent = `الساموراي: ${currentUser.full_name} | ${currentUser.membership_number}`;
+                return;
+            }
+
+            alert('ليس لديك صلاحية الدخول لأي لوحة تحكم!');
+            logout();
+        }
+
+        // تحميل جدول الأعضاء للمسؤول
+        async function loadMembersTable() {
+            const { data, error } = await _supabase.from('smc_members').select('*').order('numeric_id', { ascending: true });
+            if (error) {
+                alert('خطأ في جلب بيانات الأعضاء');
+                return;
+            }
+            allMembersCache = data;
+            renderTable(data);
+        }
+
+        function renderTable(members) {
+            const tbody = document.getElementById('members-table-body');
+            tbody.innerHTML = '';
+            members.forEach(m => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-red-950/30 transition">
+                        <td class="p-3 font-mono font-bold text-red-400">${m.membership_number}</td>
+                        <td class="p-3 font-bold text-white">${m.full_name}</td>
+                        <td class="p-3">${m.phone_number}</td>
+                        <td class="p-3">${m.address}</td>
+                        <td class="p-3 text-[10px]">
+                            <a href="${m.facebook_link}" target="_blank" class="text-blue-400 underline block">فيسبوك</a>
+                            ${m.samurai_facebook_link ? `<a href="${m.samurai_facebook_link}" target="_blank" class="text-red-400 underline block">ساموراي</a>` : ''}
+                        </td>
+                        <td class="p-3">
+                            <span class="px-2 py-1 rounded text-[10px] ${m.status === 'نشط' ? 'bg-green-950 text-green-300 border border-green-800' : 'bg-red-950 text-red-300 border border-red-800'}">${m.status}</span>
+                        </td>
+                        <td class="p-3">${m.registered_by}</td>
+                        <td class="p-3">${m.registration_date}</td>
+                        <td class="p-3">${m.expiry_date}</td>
+                        <td class="p-3 text-center space-x-1 space-x-reverse">
+                            <button onclick="renewMembership(${m.numeric_id})" class="bg-blue-900 hover:bg-blue-800 text-white px-2 py-1 rounded text-[10px]">تجديد</button>
+                            <button onclick="deleteMember(${m.numeric_id})" class="bg-red-900 hover:bg-red-800 text-white px-2 py-1 rounded text-[10px]">حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterAdminTable() {
+            const query = document.getElementById('admin-search-input').value.toLowerCase();
+            const filtered = allMembersCache.filter(m => m.full_name.toLowerCase().includes(query) || m.membership_number.toLowerCase().includes(query));
+            renderTable(filtered);
+        }
+
+        // تسجيل عضو جديد
+        async function registerNewMember(e) {
+            e.preventDefault();
+            const fullName = document.getElementById('reg-name').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const address = document.getElementById('reg-address').value.trim();
+            const fb = document.getElementById('reg-fb').value.trim();
+            const samFb = document.getElementById('reg-sam-fb').value.trim();
+            const role = document.getElementById('reg-role').value;
+
+            // جلب أعلى رقم مسلسل لتوليد الرقم التالي بدقة وعدم تداخل الأرقام المحذوفة
+            const { data: maxData } = await _supabase.from('smc_members').select('numeric_id').order('numeric_id', { ascending: false }).limit(1);
+            const nextNumericId = maxData && maxData.length > 0 ? maxData[0].numeric_id + 1 : 1;
+            const paddedId = String(nextNumericId).padStart(6, '0');
+            const roleSuffix = roleCodes[role] || 'M';
+            const membershipNumber = `SMC-${paddedId}-${roleSuffix}`;
+
+            const expiryDate = new Date();
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+
+            const { error } = await _supabase.from('smc_members').insert([{
+                membership_number: membershipNumber,
+                numeric_id: nextNumericId,
+                full_name: fullName,
+                phone_number: phone,
+                address: address,
+                facebook_link: fb,
+                samurai_facebook_link: samFb,
+                role: role,
+                status: 'نشط',
+                registered_by: currentUser.full_name,
+                admin_signature: currentUser.full_name,
+                registration_date: new Date().toISOString().split('T')[0],
+                expiry_date: expiryDate.toISOString().split('T')[0]
+            }]);
+
+            if (error) {
+                alert('فشل التسجيل: قد يكون العضو مسجلاً مسبقاً بنفس الاسم ورقم الهاتف.');
+                return;
+            }
+
+            alert(`تم تسجيل العضو بنجاح برمز العضوية: ${membershipNumber}`);
+            closeRegisterModal();
+            loadMembersTable();
+        }
+
+        // تجديد العضوية
+        async function renewMembership(numericId) {
+            const member = allMembersCache.find(m => m.numeric_id === numericId);
+            if (!member) return;
+
+            const newExpiry = new Date(member.expiry_date);
+            newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+
+            const { error } = await _supabase.from('smc_members')
+                .update({ expiry_date: newExpiry.toISOString().split('T')[0], status: 'نشط' })
+                .eq('numeric_id', numericId);
+
+            if (error) {
+                alert('فشل تجديد العضوية');
+                return;
+            }
+            alert('تم تجديد العضوية بنجاح لمدة سنة إضافية');
+            loadMembersTable();
+        }
+
+        // حذف عضو (مع الاحتفاظ برقم المسلسل وعدم ضياعه)
+        async function deleteMember(numericId) {
+            if (!confirm('هل أنت متأكد من حذف هذا العضو؟ (سيتم الاحتفاظ برقم التسلسل ولن يمنح لشخص آخر)')) return;
+            const { error } = await _supabase.from('smc_members').delete().eq('numeric_id', numericId);
+            if (error) {
+                alert('فشل الحذف');
+                return;
+            }
+            loadMembersTable();
+        }
+
+        // بحث المشرف
+        async function supervisorSearch() {
+            const query = document.getElementById('sup-search-input').value.trim();
+            const { data } = await _supabase.from('smc_members').select('*').or(`full_name.ilike.%${query}%,membership_number.ilike.%${query}%`);
+            const container = document.getElementById('sup-search-results');
+            container.innerHTML = '';
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-xs">لا توجد نتائج مطابقة.</p>';
+                return;
+            }
+            data.forEach(m => {
+                container.innerHTML += `
+                    <div class="bg-black/50 border border-gray-800 p-4 rounded flex justify-between items-center text-xs">
+                        <div>
+                            <span class="text-red-400 font-mono font-bold">${m.membership_number}</span>
+                            <h4 class="text-white font-bold text-sm mt-1">${m.full_name}</h4>
+                            <p class="text-gray-400">الهاتف: ${m.phone_number} | الحالة: ${m.status}</p>
+                            <p class="text-gray-500 text-[10px]">تسجيل: ${m.registration_date} | انتهاء: ${m.expiry_date}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // بحث الساموراي
+        async function samuraiSearch() {
+            const query = document.getElementById('sam-search-input').value.trim();
+            const { data } = await _supabase.from('smc_members').select('membership_number, full_name, phone_number, status, registration_date').or(`full_name.ilike.%${query}%,membership_number.ilike.%${query}%`);
+            const container = document.getElementById('sam-search-results');
+            container.innerHTML = '';
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-xs">لا توجد نتائج مطابقة.</p>';
+                return;
+            }
+            data.forEach(m => {
+                container.innerHTML += `
+                    <div class="bg-black/50 border border-gray-800 p-4 rounded text-xs">
+                        <span class="text-red-400 font-mono font-bold">${m.membership_number}</span>
+                        <h4 class="text-white font-bold text-sm mt-1">${m.full_name}</h4>
+                        <p class="text-gray-400">الهاتف: ${m.phone_number} | الحالة: ${m.status}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function openRegisterModal() { document.getElementById('register-modal').classList.remove('hidden'); document.getElementById('register-modal').classList.add('flex'); }
+        function closeRegisterModal() { document.getElementById('register-modal').classList.add('hidden'); document.getElementById('register-modal').classList.remove('flex'); }
+        function logout() { location.reload(); }
+    </script>
+</body>
+</html>
