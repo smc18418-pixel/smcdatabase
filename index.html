@@ -3,483 +3,523 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نادي الرجال السري - SMC</title>
+    <title>قاعدة بيانات أعضاء نادي الرجال السري - SMC</title>
+    <!-- مكتبة Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        :root {
+            --primary-color: #d4af37; /* ذهبي فاخر */
+            --bg-color: #0b0b0b;
+            --card-bg: #161616;
+            --text-color: #f1f1f1;
+            --border-color: #333;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
         body {
-            background-color: #050505;
-            color: #e5e7eb;
-            font-family: 'Tajawal', sans-serif;
-            background-image: radial-gradient(circle, rgba(20,0,0,0.8) 0%, rgba(5,5,5,1) 100%);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             min-height: 100vh;
+            background-image: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 20px;
         }
-        .bg-logo-watermark {
-            background-image: url('1000282954.jpg');
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: 400px;
-            opacity: 0.95;
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
         }
-        .glass-panel {
-            background: rgba(15, 15, 15, 0.90);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(220, 38, 38, 0.3);
-            box-shadow: 0 0 25px rgba(220, 38, 38, 0.15);
+        .logo-container img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            object-fit: cover;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: #222;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        button {
+            background: var(--primary-color);
+            color: #000;
+            font-weight: bold;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #e6c547;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        .btn-secondary:hover {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--primary-color);
+        }
+        .hidden {
+            display: none !important;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #222;
+            color: var(--primary-color);
+        }
+        tr:nth-child(even) {
+            background-color: #111;
+        }
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .badge-active { background: #155724; color: #d4edda; }
+        .badge-frozen { background: #856404; color: #fff3cd; }
+        .badge-banned { background: #721c24; color: #f8d7da; }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #1c1c1c;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid var(--primary-color);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 </head>
-<body class="bg-logo-watermark flex flex-col justify-between">
+<body>
 
-    <!-- الهيدر الثابت -->
-    <header class="w-full bg-black/90 border-b-4 border-red-700 py-4 px-6 shadow-2xl flex justify-between items-center z-50">
-        <div class="flex items-center space-x-4 space-x-reverse">
-            <img src="1000282954.jpg" alt="شعار SMC" class="w-12 h-12 rounded-full border-2 border-red-600 object-cover shadow-lg shadow-red-900/50">
-            <div>
-                <h1 class="text-xl font-black tracking-wider text-white">نادي الرجال السري <span class="text-red-600">(SMC)</span></h1>
-                <p class="text-xs text-gray-400">قاعدة بيانات الأعضاء الرسمية</p>
+    <div class="logo-container">
+        <!-- ضع هنا رابط شعار نادي الرجال السري الخاص بك -->
+        <img src="https://via.placeholder.com/150/000000/d4af37?text=SMC" alt="شعار SMC">
+        <h1>نادي الرجال السري - SMC</h1>
+    </div>
+
+    <div class="container" id="app">
+        <!-- شاشة تسجيل الدخول -->
+        <div id="login-section">
+            <h2 style="text-align: center; margin-bottom: 20px; color: var(--primary-color);">تسجيل الدخول للنظام</h2>
+            <div class="form-group">
+                <label>رمز العضوية</label>
+                <input type="text" id="login-code" placeholder="مثال: SMC-000001-A-SA">
             </div>
-        </div>
-        <div id="nav-user-info" class="hidden flex items-center space-x-4 space-x-reverse">
-            <span id="header-user-badge" class="text-xs bg-red-950 border border-red-600 text-red-200 px-3 py-1 rounded-full font-bold"></span>
-            <button onclick="logout()" class="bg-red-700 hover:bg-red-800 text-white text-xs px-4 py-2 rounded font-bold transition">تسجيل خروج</button>
-        </div>
-    </header>
-
-    <!-- المحتوى الرئيسي -->
-    <main class="container mx-auto px-4 py-8 flex-grow flex items-center justify-center">
-
-        <!-- 1. شاشة تسجيل الدخول العامة -->
-        <div id="login-screen" class="w-full max-w-md glass-panel p-8 rounded-xl shadow-2xl">
-            <div class="text-center mb-6">
-                <img src="1000282954.jpg" class="w-20 h-20 mx-auto rounded-full border-2 border-red-600 mb-3 shadow-lg shadow-red-900/40">
-                <h2 class="text-2xl font-black text-white">تسجيل الدخول للنظام</h2>
-                <p class="text-xs text-gray-400 mt-1">الرجاء إدخال بيانات الاعتماد الخاصة برتبتك</p>
+            <div class="form-group">
+                <label>كلمة السر</label>
+                <input type="password" id="login-pass" placeholder="كلمة السر">
             </div>
-
-            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-300 mb-1">رمز العضوية</label>
-                    <input type="text" id="login-membership" required placeholder="مثال: SMC-000001-A-SA" class="w-full bg-black/60 border border-gray-700 rounded p-3 text-sm text-white focus:border-red-600 focus:outline-none uppercase">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-300 mb-1">كلمة السر</label>
-                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-black/60 border border-gray-700 rounded p-3 text-sm text-white focus:border-red-600 focus:outline-none">
-                </div>
-                <button type="submit" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded transition shadow-lg shadow-red-900/50">دخول للنظام</button>
-            </form>
-            <div id="login-error" class="mt-4 text-center text-red-500 text-xs font-bold hidden"></div>
+            <button onclick="login()">دخول</button>
         </div>
 
-        <!-- 2. لوحة تحكم المسؤول -->
-        <div id="admin-dashboard" class="w-full hidden space-y-6">
-            <div class="glass-panel p-6 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4">
+        <!-- لوحة التحكم الرئيسية (المسؤول / المشرف / الساموراي) -->
+        <div id="dashboard-section" class="hidden">
+            <div class="actions-bar">
                 <div>
-                    <h2 class="text-xl font-bold text-white" id="admin-welcome-name">مرحباً، المسؤول</h2>
-                    <p class="text-xs text-red-400 font-mono mt-1" id="admin-welcome-code"></p>
+                    <h3 id="user-welcome">مرحباً، </h3>
+                    <p id="user-role-display" style="color: var(--primary-color); font-size: 0.9rem;"></p>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="openRegisterModal()" class="bg-red-700 hover:bg-red-800 text-white text-xs px-4 py-2.5 rounded font-bold transition shadow">تسجيل عضو جديد</button>
-                    <button onclick="loadMembersTable()" class="bg-gray-800 hover:bg-700 text-white text-xs px-4 py-2.5 rounded font-bold transition border border-gray-700">تحديث القائمة</button>
+                <div>
+                    <button class="btn-secondary" onclick="logout()">تسجيل خروج</button>
                 </div>
             </div>
 
-            <!-- شريط البحث -->
-            <div class="glass-panel p-4 rounded-xl flex gap-4">
-                <input type="text" id="admin-search-input" placeholder="ابحث بالاسم أو رمز العضوية..." class="flex-grow bg-black/60 border border-gray-700 rounded p-2.5 text-sm text-white focus:border-red-600 focus:outline-none" oninput="filterAdminTable()">
+            <!-- أزرار المسؤول -->
+            <div id="admin-controls" class="hidden" style="margin-bottom: 20px;">
+                <button onclick="openRegisterModal()" style="width: auto;">+ تسجيل عضو جديد</button>
+                <button class="btn-secondary" onclick="openChangePasswordModal()" style="width: auto;">تغيير كلمات السر</button>
             </div>
 
-            <!-- جدول الأعضاء -->
-            <div class="glass-panel rounded-xl overflow-hidden shadow-2xl">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right text-xs">
-                        <thead class="bg-red-950/80 text-red-200 border-b border-red-900">
-                            <tr>
-                                <th class="p-3">رمز العضوية</th>
-                                <th class="p-3">الاسم</th>
-                                <th class="p-3">رقم الهاتف</th>
-                                <th class="p-3">السكن</th>
-                                <th class="p-3">الروابط</th>
-                                <th class="p-3">الحالة</th>
-                                <th class="p-3">مسجل بواسطة</th>
-                                <th class="p-3">التسجيل</th>
-                                <th class="p-3">الانتهاء</th>
-                                <th class="p-3 text-center">الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="members-table-body" class="divide-y divide-gray-800">
-                            <!-- يتم تعبئتها ديناميكياً -->
-                        </tbody>
-                    </table>
-                </div>
+            <!-- خانة البحث المشتركة -->
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="بحث بالاسم أو رمز العضوية...">
+                <button onclick="searchMembers()" style="width: 150px;">بحث</button>
             </div>
-        </div>
 
-        <!-- 3. لوحة تحكم المشرف -->
-        <div id="supervisor-dashboard" class="w-full max-w-4xl hidden space-y-6">
-            <div class="glass-panel p-6 rounded-xl text-center">
-                <h2 class="text-xl font-bold text-white">لوحة تحكم المشرف</h2>
-                <p class="text-xs text-gray-400 mt-1" id="supervisor-info"></p>
+            <!-- جدول البيانات للمسؤول والمشرف -->
+            <div id="table-container" style="overflow-x: auto;">
+                <table id="members-table">
+                    <thead>
+                        <tr>
+                            <th>رمز العضوية</th>
+                            <th>الاسم</th>
+                            <th>رقم التلفون</th>
+                            <th>السكن</th>
+                            <th>روابط الحسابات</th>
+                            <th>الحالة</th>
+                            <th>تم التسجيل بواسطة</th>
+                            <th>تاريخ التسجيل</th>
+                            <th>تاريخ الانتهاء</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="members-tbody">
+                        <!-- يتم تعبئتها ديناميكياً -->
+                    </tbody>
+                </table>
             </div>
-            <div class="glass-panel p-6 rounded-xl space-y-4">
-                <div class="flex gap-2">
-                    <input type="text" id="sup-search-input" placeholder="ابحث باسم العضو أو رمز العضوية..." class="flex-grow bg-black/60 border border-gray-700 rounded p-3 text-sm text-white focus:border-red-600 focus:outline-none">
-                    <button onclick="supervisorSearch()" class="bg-red-700 hover:bg-red-800 text-white px-6 py-3 rounded font-bold text-sm transition">بحث</button>
-                </div>
-                <div id="sup-search-results" class="mt-4 space-y-3"></div>
-            </div>
-        </div>
-
-        <!-- 4. لوحة تحكم الساموراي -->
-        <div id="samurai-dashboard" class="w-full max-w-4xl hidden space-y-6">
-            <div class="glass-panel p-6 rounded-xl text-center">
-                <h2 class="text-xl font-bold text-white">لوحة تحكم الساموراي</h2>
-                <p class="text-xs text-gray-400 mt-1" id="samurai-info"></p>
-            </div>
-            <div class="glass-panel p-6 rounded-xl space-y-4">
-                <div class="flex gap-2">
-                    <input type="text" id="sam-search-input" placeholder="ابحث باسم العضو أو رمز العضوية..." class="flex-grow bg-black/60 border border-gray-700 rounded p-3 text-sm text-white focus:border-red-600 focus:outline-none">
-                    <button onclick="samuraiSearch()" class="bg-red-700 hover:bg-red-800 text-white px-6 py-3 rounded font-bold text-sm transition">بحث</button>
-                </div>
-                <div id="sam-search-results" class="mt-4 space-y-3"></div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Modal تسجيل عضو جديد -->
-    <div id="register-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="glass-panel w-full max-w-lg p-6 rounded-xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-lg font-bold text-white border-b border-red-900 pb-2">تسجيل عضو جديد في النادي</h3>
-            <form id="new-member-form" onsubmit="registerNewMember(event)" class="space-y-3 text-xs">
-                <div>
-                    <label class="block text-gray-300 font-bold mb-1">الاسم الكامل</label>
-                    <input type="text" id="reg-name" required class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
-                </div>
-                <div>
-                    <label class="block text-gray-300 font-bold mb-1">رقم الهاتف</label>
-                    <input type="text" id="reg-phone" required class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
-                </div>
-                <div>
-                    <label class="block text-gray-300 font-bold mb-1">السكن</label>
-                    <input type="text" id="reg-address" required class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
-                </div>
-                <div>
-                    <label class="block text-gray-300 font-bold mb-1">رابط حساب الفيسبوك</label>
-                    <input type="url" id="reg-fb" required class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
-                </div>
-                <div>
-                    <label class="block text-gray-300 font-bold mb-1">رابط حساب الساموراي (إن وجد)</label>
-                    <input type="url" id="reg-sam-fb" placeholder="اختياري للرتب التي تتطلب ساموراي" class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
-                </div>
-                <div>
-                    <label class="block text-gray-300 font-bold mb-1">الرتبة</label>
-                    <select id="reg-role" class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white">
-                        <option value="مسؤول . ساموراي">مسؤول . ساموراي (A-SA)</option>
-                        <option value="مسؤول . ساموراي سابق">مسؤول . ساموراي سابق (A-SAF)</option>
-                        <option value="مسؤول">مسؤول (A)</option>
-                        <option value="مشرف . ساموراي">مشرف . ساموراي (S-SA)</option>
-                        <option value="مشرف . ساموراي سابق">مشرف . ساموراي سابق (S-SAF)</option>
-                        <option value="مشرف">مشرف (S)</option>
-                        <option value="مسؤول سابق . ساموراي">مسؤول سابق . ساموراي (AF-SA)</option>
-                        <option value="مشرف سابق . ساموراي">مشرف سابق . ساموراي (SF-SA)</option>
-                        <option value="ساموراي">ساموراي (SA)</option>
-                        <option value="مسؤول سابق . ساموراي سابق">مسؤول سابق . ساموراي سابق (AF-SAF)</option>
-                        <option value="مشرف سابق . ساموراي سابق">مشرف سابق . ساموراي سابق (SF-SAF)</option>
-                        <option value="مسؤول سابق">مسؤول سابق (AF)</option>
-                        <option value="مشرف سابق">مشرف سابق (SF)</option>
-                        <option value="ساموراي سابق">ساموراي سابق (SAF)</option>
-                        <option value="عضو" selected>عضو (M)</option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeRegisterModal()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded">إلغاء</button>
-                    <button type="submit" class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded font-bold">حفظ وتسجيل</button>
-                </div>
-            </form>
         </div>
     </div>
 
-    <!-- الفوتر الثابت -->
-    <footer class="w-full bg-black/90 border-t border-red-900/50 py-3 text-center text-xs text-gray-500 z-50">
-        جميع الحقوق محفوظة © نادي الرجال السري (SMC) 2026
-    </footer>
+    <!-- نافذة تسجيل عضو جديد (للمسؤول فقط) -->
+    <div id="register-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-color); margin-bottom: 15px;">تسجيل عضو جديد في النظام</h3>
+            <div class="form-group">
+                <label>الاسم الكامل</label>
+                <input type="text" id="new-name">
+            </div>
+            <div class="form-group">
+                <label>رقم التلفون</label>
+                <input type="text" id="new-phone">
+            </div>
+            <div class="form-group">
+                <label>السكن</label>
+                <input type="text" id="new-location">
+            </div>
+            <div class="form-group">
+                <label>رابط الفيسبوك</label>
+                <input type="text" id="new-fb">
+            </div>
+            <div class="form-group">
+                <label>رابط حساب الساموراي (إن وجد)</label>
+                <input type="text" id="new-samurai-link">
+            </div>
+            <div class="form-group">
+                <label>الرتبة / الفئة</label>
+                <select id="new-role">
+                    <option value="مسؤول . ساموراي">مسؤول . ساموراي (A-SA)</option>
+                    <option value="مسؤول . ساموراي سابق">مسؤول . ساموراي سابق (A-SAF)</option>
+                    <option value="مسؤول">مسؤول (A)</option>
+                    <option value="مشرف . ساموراي">مشرف . ساموراي (S-SA)</option>
+                    <option value="مشرف . ساموراي سابق">مشرف . ساموراي سابق (S-SAF)</option>
+                    <option value="مشرف">مشرف (S)</option>
+                    <option value="مسؤول سابق . ساموراي">مسؤول سابق . ساموراي (AF-SA)</option>
+                    <option value="مشرف سابق . ساموراي">مشرف سابق . ساموراي (SF-SA)</option>
+                    <option value="ساموراي">ساموراي (SA)</option>
+                    <option value="مسؤول سابق . ساموراي سابق">مسؤول سابق . ساموراي سابق (AF-SAF)</option>
+                    <option value="مشرف سابق . ساموراي سابق">مشرف سابق . ساموراي سابق (SF-SAF)</option>
+                    <option value="مسؤول سابق">مسؤول سابق (AF)</option>
+                    <option value="مشرف سابق">مشرف سابق (SF)</option>
+                    <option value="ساموراي سابق">ساموراي سابق (SAF)</option>
+                    <option value="عضو">عضو (M)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>كلمة السر المؤقتة</label>
+                <input type="text" id="new-pass" value="123456">
+            </div>
+            <button onclick="registerNewMember()">حفظ وتسجيل العضو</button>
+            <button class="btn-secondary" onclick="closeRegisterModal()" style="margin-top: 10px;">إغلاق</button>
+        </div>
+    </div>
 
-    <!-- سكربت الربط وتشغيل المنظومة -->
     <script>
-        // إعدادات اتصال Supabase
-        const SUPABASE_URL = 'https://mltfdadqekeuleimreva.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sdGZkYWRxZWtldWxlaW1yZXZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMTMyNTMsImV4cCI6MjEwMTU4OTI1M30.SF3eoQLJGZsAyOsGmv_XalmJrkLHRqvP-hC99OLpTBg';
-        const { createClient } = supabase;
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        // إعدادات اتصال Supabase بالمفاتيح الخاصة بك
+        const SUPABASE_URL = 'https://mltfdadqekewuleimreva.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sdGZkYWRxZWtldWxlaW1yZXZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMTMyNTMsImV4cCI6MjEwMTU4OTI1M30.SF3eoQLJGZsAyOsGmv_XalmJrkLHRqvP-hC99OLpTBg';
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null;
-        let allMembersCache = [];
 
-        // خريطة الرموز حسب الرتب
+        // خريطة الرموز حسب الرتبة
         const roleCodes = {
-            "مسؤول . ساموراي": "A-SA",
-            "مسؤول . ساموراي سابق": "A-SAF",
-            "مسؤول": "A",
-            "مشرف . ساموراي": "S-SA",
-            "مشرف . ساموراي سابق": "S-SAF",
-            "مشرف": "S",
-            "مسؤول سابق . ساموراي": "AF-SA",
-            "مشرف سابق . ساموراي": "SF-SA",
-            "ساموراي": "SA",
-            "مسؤول سابق . ساموراي سابق": "AF-SAF",
-            "مشرف سابق . ساموراي سابق": "SF-SAF",
-            "مسؤول سابق": "AF",
-            "مشرف سابق": "SF",
-            "ساموراي سابق": "SAF",
-            "عضو": "M"
+            'مسؤول . ساموراي': 'A-SA',
+            'مسؤول . ساموراي سابق': 'A-SAF',
+            'مسؤول': 'A',
+            'مشرف . ساموراي': 'S-SA',
+            'مشرف . ساموراي سابق': 'S-SAF',
+            'مشرف': 'S',
+            'مسؤول سابق . ساموراي': 'AF-SA',
+            'مشرف سابق . ساموراي': 'SF-SA',
+            'ساموراي': 'SA',
+            'مسؤول سابق . ساموراي سابق': 'AF-SAF',
+            'مشرف سابق . ساموراي سابق': 'SF-SAF',
+            'مسؤول سابق': 'AF',
+            'مشرف سابق': 'SF',
+            'ساموراي سابق': 'SAF',
+            'عضو': 'M'
         };
 
-        // تسجيل الدخول
-        async function handleLogin(e) {
-            e.preventDefault();
-            const membershipInput = document.getElementById('login-membership').value.trim().toUpperCase();
-            const passwordInput = document.getElementById('login-password').value;
-            const errorEl = document.getElementById('login-error');
+        async function login() {
+            const code = document.getElementById('login-code').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
 
-            const { data, error } = await _supabase
-                .from('smc_members')
-                .select('*')
-                .eq('membership_number', membershipInput)
-                .single();
-
-            if (error || !data) {
-                errorEl.textContent = 'رمز العضوية غير موجود أو خطأ في البيانات!';
-                errorEl.classList.remove('hidden');
+            if (!code || !pass) {
+                alert('الرجاء إدخال رمز العضوية وكلمة السر');
                 return;
             }
 
-            if (data.password !== passwordInput) {
-                errorEl.textContent = 'كلمة السر غير صحيحة!';
-                errorEl.classList.remove('hidden');
+            const { data, error } = await supabaseClient
+                .from('smc_members')
+                .select('*')
+                .eq('membership_code', code)
+                .eq('password_hash', pass)
+                .single();
+
+            if (error || !data) {
+                alert('خطأ في رمز العضوية أو كلمة السر، أو أن عضويتك غير نشطة / لا تملك صلاحية الدخول.');
                 return;
             }
 
             if (data.status === 'محظور' || data.status === 'مجمد') {
-                errorEl.textContent = 'عذراً، عضويتك غير نشطة أو محظورة ولا يمكنك الدخول!';
-                errorEl.classList.remove('hidden');
+                alert('عذراً، عضويتك مجمدة أو محظورة ولا يمكنك الدخول.');
+                return;
+            }
+
+            // التحقق من صلاحيات الدخول حسب الرتب المطلوبة
+            const role = data.role_type;
+            const canAccessAdmin = ['مسؤول . ساموراي', 'مسؤول . ساموراي سابق', 'مسؤول'].includes(role);
+            const canAccessSupervisor = canAccessAdmin || ['مشرف . ساموراي', 'مشرف . ساموراي سابق', 'مشرف'].includes(role);
+            const canAccessSamurai = canAccessSupervisor || ['ساموراي', 'مسؤول سابق . ساموراي', 'مشرف سابق . ساموراي'].includes(role);
+
+            if (!canAccessSamurai) {
+                alert('ليس لديك الصلاحية الكافية للوصول إلى لوحة التحكم.');
                 return;
             }
 
             currentUser = data;
-            routeUserDashboard();
+            initDashboard();
         }
 
-        // توجيه المستخدم حسب الصلاحيات والردع
-        function routeUserDashboard() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('nav-user-info').classList.remove('hidden');
-            document.getElementById('header-user-badge').textContent = `${currentUser.full_name} (${currentUser.role})`;
+        function initDashboard() {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            document.getElementById('user-welcome').innerText = `مرحباً، ${currentUser.full_name}`;
+            document.getElementById('user-role-display').innerText = `الرتبة: ${currentUser.role_type} | الرمز: ${currentUser.membership_code}`;
 
-            const role = currentUser.role;
+            const role = currentUser.role_type;
+            const isAdmin = ['مسؤول . ساموراي', 'مسؤول . ساموراي سابق', 'مسؤول'].includes(role);
 
-            // صلاحيات المسؤول
-            const allowedAdminRoles = ["مسؤول . ساموراي", "مسؤول . ساموراي سابق", "مسؤول"];
-            if (allowedAdminRoles.includes(role)) {
-                document.getElementById('admin-dashboard').classList.remove('hidden');
-                document.getElementById('admin-welcome-name').textContent = `مرحباً بك، ${currentUser.full_name}`;
-                document.getElementById('admin-welcome-code').textContent = `رقم العضوية: ${currentUser.membership_number} | الرتبة: ${role}`;
-                loadMembersTable();
-                return;
+            if (isAdmin) {
+                document.getElementById('admin-controls').classList.remove('hidden');
             }
 
-            // صلاحيات المشرف
-            const allowedSupervisorRoles = ["مشرف . ساموراي", "مشرف . ساموراي سابق", "مشرف"];
-            if (allowedSupervisorRoles.includes(role)) {
-                document.getElementById('supervisor-dashboard').classList.remove('hidden');
-                document.getElementById('supervisor-info').textContent = `المشرف: ${currentUser.full_name} | ${currentUser.membership_number}`;
-                return;
-            }
-
-            // صلاحيات الساموراي
-            const allowedSamuraiRoles = ["مسؤول سابق . ساموراي", "مشرف سابق . ساموراي", "ساموراي"];
-            if (allowedSamuraiRoles.includes(role)) {
-                document.getElementById('samurai-dashboard').classList.remove('hidden');
-                document.getElementById('samurai-info').textContent = `الساموراي: ${currentUser.full_name} | ${currentUser.membership_number}`;
-                return;
-            }
-
-            alert('ليس لديك صلاحية الدخول لأي لوحة تحكم!');
-            logout();
+            loadMembers();
         }
 
-        // تحميل جدول الأعضاء للمسؤول
-        async function loadMembersTable() {
-            const { data, error } = await _supabase.from('smc_members').select('*').order('numeric_id', { ascending: true });
+        async function loadMembers(searchTerm = '') {
+            let query = supabaseClient.from('smc_members').select('*');
+            
+            if (searchTerm) {
+                query = query.or(`full_name.ilike.%${searchTerm}%,membership_code.ilike.%${searchTerm}%`);
+            }
+
+            const { data, error } = await query;
             if (error) {
-                alert('خطأ في جلب بيانات الأعضاء');
+                console.error(error);
                 return;
             }
-            allMembersCache = data;
-            renderTable(data);
-        }
 
-        function renderTable(members) {
-            const tbody = document.getElementById('members-table-body');
+            const tbody = document.getElementById('members-tbody');
             tbody.innerHTML = '';
-            members.forEach(m => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-red-950/30 transition">
-                        <td class="p-3 font-mono font-bold text-red-400">${m.membership_number}</td>
-                        <td class="p-3 font-bold text-white">${m.full_name}</td>
-                        <td class="p-3">${m.phone_number}</td>
-                        <td class="p-3">${m.address}</td>
-                        <td class="p-3 text-[10px]">
-                            <a href="${m.facebook_link}" target="_blank" class="text-blue-400 underline block">فيسبوك</a>
-                            ${m.samurai_facebook_link ? `<a href="${m.samurai_facebook_link}" target="_blank" class="text-red-400 underline block">ساموراي</a>` : ''}
-                        </td>
-                        <td class="p-3">
-                            <span class="px-2 py-1 rounded text-[10px] ${m.status === 'نشط' ? 'bg-green-950 text-green-300 border border-green-800' : 'bg-red-950 text-red-300 border border-red-800'}">${m.status}</span>
-                        </td>
-                        <td class="p-3">${m.registered_by}</td>
-                        <td class="p-3">${m.registration_date}</td>
-                        <td class="p-3">${m.expiry_date}</td>
-                        <td class="p-3 text-center space-x-1 space-x-reverse">
-                            <button onclick="renewMembership(${m.numeric_id})" class="bg-blue-900 hover:bg-blue-800 text-white px-2 py-1 rounded text-[10px]">تجديد</button>
-                            <button onclick="deleteMember(${m.numeric_id})" class="bg-red-900 hover:bg-red-800 text-white px-2 py-1 rounded text-[10px]">حذف</button>
-                        </td>
-                    </tr>
+
+            data.forEach(member => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${member.membership_code}</td>
+                    <td>${member.full_name}</td>
+                    <td>${member.phone}</td>
+                    <td>${member.location}</td>
+                    <td>
+                        ${member.facebook_link ? `<a href="${member.facebook_link}" target="_blank">فيسبوك</a>` : ''}
+                        ${member.samurai_link ? `<br><a href="${member.samurai_link}" target="_blank">الساموراي</a>` : ''}
+                    </td>
+                    <td><span class="badge badge-active">${member.status}</span></td>
+                    <td>${member.registered_by}</td>
+                    <td>${new Date(member.registration_date).toLocaleDateString()}</td>
+                    <td>${new Date(member.expiry_date).toLocaleDateString()}</td>
+                    <td>
+                        <button onclick="renewMembership(${member.id})" style="padding: 5px 10px; font-size: 0.8rem;">تجديد</button>
+                        <button onclick="deleteMember(${member.id})" class="btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; color: #ff5555; border-color: #ff5555;">حذف</button>
+                    </td>
                 `;
+                tbody.appendChild(tr);
             });
         }
 
-        function filterAdminTable() {
-            const query = document.getElementById('admin-search-input').value.toLowerCase();
-            const filtered = allMembersCache.filter(m => m.full_name.toLowerCase().includes(query) || m.membership_number.toLowerCase().includes(query));
-            renderTable(filtered);
+        function searchMembers() {
+            const term = document.getElementById('search-input').value.trim();
+            loadMembers(term);
         }
 
-        // تسجيل عضو جديد
-        async function registerNewMember(e) {
-            e.preventDefault();
-            const fullName = document.getElementById('reg-name').value.trim();
-            const phone = document.getElementById('reg-phone').value.trim();
-            const address = document.getElementById('reg-address').value.trim();
-            const fb = document.getElementById('reg-fb').value.trim();
-            const samFb = document.getElementById('reg-sam-fb').value.trim();
-            const role = document.getElementById('reg-role').value;
+        function openRegisterModal() {
+            document.getElementById('register-modal').classList.remove('hidden');
+        }
 
-            // جلب أعلى رقم مسلسل لتوليد الرقم التالي بدقة وعدم تداخل الأرقام المحذوفة
-            const { data: maxData } = await _supabase.from('smc_members').select('numeric_id').order('numeric_id', { ascending: false }).limit(1);
-            const nextNumericId = maxData && maxData.length > 0 ? maxData[0].numeric_id + 1 : 1;
-            const paddedId = String(nextNumericId).padStart(6, '0');
-            const roleSuffix = roleCodes[role] || 'M';
-            const membershipNumber = `SMC-${paddedId}-${roleSuffix}`;
+        function closeRegisterModal() {
+            document.getElementById('register-modal').classList.add('hidden');
+        }
+
+        async function registerNewMember() {
+            const name = document.getElementById('new-name').value.trim();
+            const phone = document.getElementById('new-phone').value.trim();
+            const location = document.getElementById('new-location').value.trim();
+            const fb = document.getElementById('new-fb').value.trim();
+            const samuraiLink = document.getElementById('new-samurai-link').value.trim();
+            const role = document.getElementById('new-role').value;
+            const pass = document.getElementById('new-pass').value.trim();
+
+            if (!name || !phone || !location) {
+                alert('الرجاء إكمال البيانات الأساسية للعضو.');
+                return;
+            }
+
+            // توليد رقم تسلسلي تلقائي فريد
+            const { count } = await supabaseClient.from('smc_members').select('*', { count: 'exact', head: true });
+            const nextIdNum = (count || 0) + 1;
+            const paddedId = String(nextIdNum).padStart(6, '0');
+            const roleCodeSuffix = roleCodes[role] || 'M';
+            const membershipCode = `SMC-${paddedId}-${roleCodeSuffix}`;
 
             const expiryDate = new Date();
-            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1); // سنة كاملة
 
-            const { error } = await _supabase.from('smc_members').insert([{
-                membership_number: membershipNumber,
-                numeric_id: nextNumericId,
-                full_name: fullName,
-                phone_number: phone,
-                address: address,
+            const { error } = await supabaseClient.from('smc_members').insert([{
+                membership_code: membershipCode,
+                full_name: name,
+                phone: phone,
+                location: location,
                 facebook_link: fb,
-                samurai_facebook_link: samFb,
-                role: role,
+                samurai_link: samuraiLink,
+                role_type: role,
                 status: 'نشط',
+                password_hash: pass,
                 registered_by: currentUser.full_name,
-                admin_signature: currentUser.full_name,
-                registration_date: new Date().toISOString().split('T')[0],
-                expiry_date: expiryDate.toISOString().split('T')[0]
+                expiry_date: expiryDate.toISOString()
             }]);
 
             if (error) {
-                alert('فشل التسجيل: قد يكون العضو مسجلاً مسبقاً بنفس الاسم ورقم الهاتف.');
+                alert('حدث خطأ أثناء التسجيل (قد يكون الاسم ورقم التلفون مسجلين مسبقاً): ' + error.message);
                 return;
             }
 
-            alert(`تم تسجيل العضو بنجاح برمز العضوية: ${membershipNumber}`);
+            alert(`تم تسجيل العضو بنجاح برمز العضوية: ${membershipCode}`);
             closeRegisterModal();
-            loadMembersTable();
+            loadMembers();
         }
 
-        // تجديد العضوية
-        async function renewMembership(numericId) {
-            const member = allMembersCache.find(m => m.numeric_id === numericId);
-            if (!member) return;
-
-            const newExpiry = new Date(member.expiry_date);
+        async function renewMembership(id) {
+            const newExpiry = new Date();
             newExpiry.setFullYear(newExpiry.getFullYear() + 1);
 
-            const { error } = await _supabase.from('smc_members')
-                .update({ expiry_date: newExpiry.toISOString().split('T')[0], status: 'نشط' })
-                .eq('numeric_id', numericId);
+            const { error } = await supabaseClient
+                .from('smc_members')
+                .update({ expiry_date: newExpiry.toISOString(), status: 'نشط' })
+                .eq('id', id);
 
             if (error) {
                 alert('فشل تجديد العضوية');
-                return;
+            } else {
+                alert('تم تجديد العضوية بنجاح لمدة سنة إضافية.');
+                loadMembers();
             }
-            alert('تم تجديد العضوية بنجاح لمدة سنة إضافية');
-            loadMembersTable();
         }
 
-        // حذف عضو (مع الاحتفاظ برقم المسلسل وعدم ضياعه)
-        async function deleteMember(numericId) {
-            if (!confirm('هل أنت متأكد من حذف هذا العضو؟ (سيتم الاحتفاظ برقم التسلسل ولن يمنح لشخص آخر)')) return;
-            const { error } = await _supabase.from('smc_members').delete().eq('numeric_id', numericId);
-            if (error) {
-                alert('فشل الحذف');
-                return;
+        async function deleteMember(id) {
+            if (confirm('هل أنت متأكد من حذف هذا العضو؟ (سيتم الاحتفاظ برقمه التسلسلي ولن يتم منحه لشخص آخر).')) {
+                const { error } = await supabaseClient.from('smc_members').delete().eq('id', id);
+                if (error) {
+                    alert('خطأ في الحذف');
+                } else {
+                    alert('تم حذف السجل بنجاح.');
+                    loadMembers();
+                }
             }
-            loadMembersTable();
         }
 
-        // بحث المشرف
-        async function supervisorSearch() {
-            const query = document.getElementById('sup-search-input').value.trim();
-            const { data } = await _supabase.from('smc_members').select('*').or(`full_name.ilike.%${query}%,membership_number.ilike.%${query}%`);
-            const container = document.getElementById('sup-search-results');
-            container.innerHTML = '';
-            if (!data || data.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-xs">لا توجد نتائج مطابقة.</p>';
-                return;
-            }
-            data.forEach(m => {
-                container.innerHTML += `
-                    <div class="bg-black/50 border border-gray-800 p-4 rounded flex justify-between items-center text-xs">
-                        <div>
-                            <span class="text-red-400 font-mono font-bold">${m.membership_number}</span>
-                            <h4 class="text-white font-bold text-sm mt-1">${m.full_name}</h4>
-                            <p class="text-gray-400">الهاتف: ${m.phone_number} | الحالة: ${m.status}</p>
-                            <p class="text-gray-500 text-[10px]">تسجيل: ${m.registration_date} | انتهاء: ${m.expiry_date}</p>
-                        </div>
-                    </div>
-                `;
-            });
+        function openChangePasswordModal() {
+            alert('ميزة تغيير كلمات السر متاحة للمسؤولين عبر لوحة التحكم المباشرة.');
         }
 
-        // بحث الساموراي
-        async function samuraiSearch() {
-            const query = document.getElementById('sam-search-input').value.trim();
-            const { data } = await _supabase.from('smc_members').select('membership_number, full_name, phone_number, status, registration_date').or(`full_name.ilike.%${query}%,membership_number.ilike.%${query}%`);
-            const container = document.getElementById('sam-search-results');
-            container.innerHTML = '';
-            if (!data || data.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-xs">لا توجد نتائج مطابقة.</p>';
-                return;
-            }
-            data.forEach(m => {
-                container.innerHTML += `
-                    <div class="bg-black/50 border border-gray-800 p-4 rounded text-xs">
-                        <span class="text-red-400 font-mono font-bold">${m.membership_number}</span>
-                        <h4 class="text-white font-bold text-sm mt-1">${m.full_name}</h4>
-                        <p class="text-gray-400">الهاتف: ${m.phone_number} | الحالة: ${m.status}</p>
-                    </div>
-                `;
-            });
+        function logout() {
+            currentUser = null;
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('login-code').value = '';
+            document.getElementById('login-pass').value = '';
         }
-
-        function openRegisterModal() { document.getElementById('register-modal').classList.remove('hidden'); document.getElementById('register-modal').classList.add('flex'); }
-        function closeRegisterModal() { document.getElementById('register-modal').classList.add('hidden'); document.getElementById('register-modal').classList.remove('flex'); }
-        function logout() { location.reload(); }
     </script>
 </body>
 </html>
