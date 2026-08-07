@@ -26,148 +26,123 @@
       radial-gradient(circle at 50% 40%, rgba(200,29,37,0.10), transparent 60%);
     position:relative;
   }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAHrCAIAAAC2NPiTAAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAEAAElEQVR42uz92ZIkS5YkiDEfEVFVM/PdY797ZtZUU3UPeobwNHgA8AsgJVHJQSGKkZ2j251296x3Zza8aWqO2uI3kYw1YyU2k5M9b9y25uVl89M2N15352c3NTVa4eR8vNzFSUiYkQQmICiBCSECEZgSAzMzMzi1gDImS2yF11N+1sP9y6d6dzn3tnZs4gO1U9uY686j8Bq9mZ0RERJgwoScmTPi/wM2hR4oU+X/B5Qj/hN0mC7T0g4j6Z42wAAABJRU5ErkJggg==');
+    opacity: 0.03;
+    pointer-events: none;
+  }
   .container {
     max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
+    margin: 80px auto;
+    padding: 30px;
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   }
-  h2, h3 { color: var(--gold); text-align: center; }
+  h2 {
+    text-align: center;
+    color: var(--gold);
+    margin-bottom: 25px;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--muted);
+  }
   input {
     width: 100%;
-    padding: 10px;
-    margin: 10px 0;
+    padding: 12px;
     background: var(--panel2);
     border: 1px solid var(--border);
     color: var(--white);
-    border-radius: 5px;
-    font-family: 'Tajawal',sans-serif;
+    border-radius: 4px;
+    font-family: 'Tajawal', sans-serif;
+  }
+  input:focus {
+    border-color: var(--gold);
+    outline: none;
   }
   button {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     background: var(--red);
     color: var(--white);
     border: none;
-    border-radius: 5px;
-    font-weight: bold;
+    border-radius: 4px;
+    font-weight: 700;
     cursor: pointer;
-    font-family: 'Tajawal',sans-serif;
-    transition: 0.3s;
+    font-family: 'Tajawal', sans-serif;
+    transition: background 0.3s;
   }
-  button:hover { background: var(--red-bright); }
-  .hidden { display: none !important; }
-  .error { color: var(--red-bright); text-align: center; font-size: 14px; }
-  .success { color: #2ecc71; text-align: center; font-size: 14px; }
+  button:hover {
+    background: var(--red-bright);
+    color: var(--white);
+  }
+  #error-msg {
+    color: var(--red-bright);
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+  }
 </style>
 </head>
 <body>
 
-  <!-- شاشة تسجيل الدخول -->
-  <div id="login-screen" class="container">
-    <h2>نادي الرجال السري - SMC</h2>
-    <p style="text-align:center; color:var(--muted);">يرجى تسجيل الدخول برمز العضوية وكلمة السر</p>
-    <input type="text" id="login-membership" placeholder="رمز العضوية (مثال: SMC-000001-A-SA)" value="SMC-000001-A-SA">
-    <input type="password" id="login-password" placeholder="كلمة السر" value="123456">
-    <button onclick="handleLogin()">دخول</button>
-    <p id="login-msg" class="error"></p>
-  </div>
-
-  <!-- الشاشة الرئيسية للبرنامج (تظهر بعد تسجيل الدخول) -->
-  <div id="app-screen" class="container hidden" style="max-width: 600px;">
-    <h2>لوحة تحكم العضو</h2>
-    <div id="user-info" style="background:var(--panel2); padding:15px; border-radius:5px; margin-bottom:15px;">
-      <!-- سيتم تعبئة البيانات هنا تلقائياً من قاعدة البيانات -->
+<div class="container">
+  <h2>نادي الرجال السري</h2>
+  <form id="login-form">
+    <div class="form-group">
+      <label for="email">البريد الإلكتروني</label>
+      <input type="email" id="email" required>
     </div>
-
-    <h3>تغيير كلمة السر</h3>
-    <input type="password" id="new-password" placeholder="كلمة السر الجديدة">
-    <button onclick="handleChangePassword()">حفظ كلمة السر الجديدة</button>
-    <p id="pass-msg" class="success"></p>
-
-    <button onclick="handleLogout()" style="background:var(--border); margin-top:20px;">تسجيل خروج</button>
-  </div>
+    <div class="form-group">
+      <label for="password">كلمة المرور</label>
+      <input type="password" id="password" required>
+    </div>
+    <button type="submit" id="login-btn">تسجيل الدخول</button>
+    <div id="error-msg"></div>
+  </form>
+</div>
 
 <script>
-  // إعدادات اتصال Supabase (قم بوضع بيانات مشروعك هنا)
+  // ضع بيانات مشغلك هنا (Supabase URL & Anon Key)
   const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+  
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let currentUser = null;
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const errorDiv = document.getElementById('error-msg');
+    errorDiv.textContent = 'جاري تسجيل الدخول...';
 
-  async function handleLogin() {
-    const membership = document.getElementById('login-membership').value.trim();
-    const password = document.getElementById('login-password').value.trim();
-    const msgEl = document.getElementById('login-msg');
+    try {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
 
-    msgEl.textContent = 'جاري التحقق...';
+      if (error) throw error;
 
-    // البحث عن العضو في جدول قاعدة البيانات (مثال فرضنا اسم الجدول members والحقول membership_code و password)
-    const { data, error } = await supabase
-      .from('members')
-      .select('*')
-      .eq('membership_code', membership)
-      .eq('password', password)
-      .single();
+      errorDiv.style.color = 'var(--gold)';
+      errorDiv.textContent = 'تم تسجيل الدخول بنجاح! جاري التحويل...';
+      setTimeout(() => {
+        window.location.href = 'dashboard.html'; // أو الصفحة الرئيسية لديك
+      }, 1000);
 
-    if (error || !data) {
-      msgEl.textContent = 'رمز العضوية أو كلمة السر غير صحيحة!';
-    } else {
-      currentUser = data;
-      msgEl.textContent = '';
-      showAppScreen();
+    } catch (err) {
+      errorDiv.style.color = 'var(--red-bright)';
+      errorDiv.textContent = 'خطأ في البريد أو كلمة المرور، يرجى المحاولة مرة أخرى.';
     }
-  }
-
-  function showAppScreen() {
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('app-screen').classList.remove('hidden');
-
-    // عرض بيانات العضو المستخرجة من قاعدة البيانات
-    const infoDiv = document.getElementById('user-info');
-    infoDiv.innerHTML = `
-      <p><strong>الاسم:</strong> ${currentUser.full_name || 'أحمد حامد'}</p>
-      <p><strong>رمز العضوية:</strong> ${currentUser.membership_code}</p>
-      <p><strong>الرتبة/المنصب:</strong> ${currentUser.role || 'عضو مؤسس'}</p>
-    `;
-  }
-
-  async function handleChangePassword() {
-    const newPass = document.getElementById('new-password').value.trim();
-    const passMsg = document.getElementById('pass-msg');
-    
-    if(!newPass || newPass.length < 6) {
-      passMsg.className = 'error';
-      passMsg.textContent = 'يجب أن تكون كلمة السر الجديدة 6 أحرف أو أرقام على الأقل.';
-      return;
-    }
-
-    // تحديث كلمة السر في قاعدة البيانات لـ Supabase
-    const { error } = await supabase
-      .from('members')
-      .update({ password: newPass })
-      .eq('id', currentUser.id);
-
-    if (error) {
-      passMsg.className = 'error';
-      passMsg.textContent = 'حدث خطأ أثناء تحديث كلمة السر.';
-    } else {
-      passMsg.className = 'success';
-      passMsg.textContent = 'تم تغيير كلمة السر بنجاح!';
-      document.getElementById('new-password').value = '';
-    }
-  }
-
-  function handleLogout() {
-    currentUser = null;
-    document.getElementById('app-screen').classList.add('hidden');
-    document.getElementById('login-screen').classList.remove('hidden');
-    document.getElementById('login-password').value = '';
-  }
+  });
 </script>
 </body>
 </html>
