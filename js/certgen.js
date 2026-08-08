@@ -17,7 +17,7 @@ const COORDS = {
     name:       { x: 1600, y: 1650, maxW: 4600, size: 200, align: "center" },
     rank:       { x: 2050, y: 1900, maxW: 5600,  size: 90 , align: "center"  },
     date:       { x: 710,  y: 1900, maxW: 4600,  size: 90, align: "right"  },
-    code:       { x: 1800, y: 2000, maxW: 620,  size: 90, align: "right"  },
+    code:       { x: 1800, y: 2100, maxW: 620,  size: 100, align: "right"  },
     duration:   { x: 1400, y: 2090, maxW: 700,  size: 42, align: "right"  },
     registeredByName: { x: 2020, y: 3640, maxW: 900, size: 40, align: "right" },
     registeredByCode: { x: 2020, y: 3750, maxW: 900, size: 40, align: "right" },
