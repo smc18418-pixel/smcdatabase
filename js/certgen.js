@@ -15,7 +15,7 @@ const COORDS = {
   register: {
     image: "assets/cert_register_template.jpg",
     name:       { x: 1600, y: 1650, maxW: 4600, size: 200, align: "center" },
-    rank:       { x: 1950, y: 1800, maxW: 5600,  size: 90 , align: "center"  },
+    rank:       { x: 1950, y: 2000, maxW: 5600,  size: 90 , align: "center"  },
     date:       { x: 230,  y: 1850, maxW: 400,  size: 40, align: "right"  },
     code:       { x: 1900, y: 1935, maxW: 620,  size: 44, align: "right"  },
     duration:   { x: 1400, y: 2090, maxW: 700,  size: 42, align: "right"  },
@@ -25,8 +25,8 @@ const COORDS = {
   },
   rankChange: {
     image: "assets/cert_rank_template.jpg",
-    name:       { x: 1654, y: 1650, maxW: 2300, size: 62, align: "center" },
-    newRank:    { x: 1830, y: 1850, maxW: 700,  size: 44, align: "right"  },
+    name:       { x: 1600, y: 1650, maxW: 4600, size: 200, align: "center" },
+    newRank:    { x: 1830, y: 1850, maxW: 700,  size: 44, align: "center"  },
     date:       { x: 230,  y: 1850, maxW: 400,  size: 40, align: "right"  },
     code:       { x: 1900, y: 1935, maxW: 620,  size: 44, align: "right"  },
     promotedByName: { x: 2020, y: 3640, maxW: 900, size: 40, align: "right" },
@@ -35,10 +35,10 @@ const COORDS = {
   },
   card: {
     image: "assets/card_template.jpg",
-    name:    { x: 1050, y: 165,  maxW: 780, size: 40, align: "right", color: "#fff" },
-    code:    { x: 950,  y: 315,  maxW: 880, size: 40, align: "right", color: "#fff" },
-    phone:   { x: 950,  y: 515,  maxW: 880, size: 40, align: "right", color: "#fff" },
-    joined:  { x: 880,  y: 715,  maxW: 800, size: 40, align: "right", color: "#fff" },
+    name:    { x: 1050, y: 165,  maxW: 780, size: 80, align: "right", color: "#fff" },
+    code:    { x: 950,  y: 315,  maxW: 880, size: 80, align: "right", color: "#fff" },
+    phone:   { x: 950,  y: 515,  maxW: 880, size: 80, align: "right", color: "#fff" },
+    joined:  { x: 880,  y: 715,  maxW: 800, size: 80, align: "right", color: "#fff" },
   }
 };
 
