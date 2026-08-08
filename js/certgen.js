@@ -29,9 +29,9 @@ const COORDS = {
     newRank:    { x: 1830, y: 1850, maxW: 700,  size: 44, align: "center"  },
     date:       { x: 230,  y: 1850, maxW: 400,  size: 40, align: "right"  },
     code:       { x: 1900, y: 1935, maxW: 620,  size: 44, align: "right"  },
-    promotedByName: { x: 2020, y: 3640, maxW: 900, size: 40, align: "right" },
-    promotedByCode: { x: 2020, y: 3750, maxW: 900, size: 40, align: "right" },
-    footerDate: { x: 2870, y: 4470, maxW: 700, size: 38, align: "right" },
+    promotedByName: { x: 2400, y: 3750, maxW: 1800, size: 90, align: "right" },
+    promotedByCode: { x: 2350, y: 4000, maxW: 1800, size: 90, align: "right" },
+    footerDate: { x: 2000, y: 4470, maxW: 700, size: 38, align: "right" },
   },
   card: {
     image: "assets/card_template.jpg",
