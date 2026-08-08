@@ -21,7 +21,7 @@ const COORDS = {
     duration:   { x: 2000, y: 2490, maxW: 700,  size: 90, align: "right"  },
     registeredByName: { x: 2400, y: 3750, maxW: 900, size: 90, align: "right" },
     registeredByCode: { x: 2350, y: 4000, maxW: 1800, size: 90, align: "right" },
-    footerDate: { x: 2870, y: 4440, maxW: 1400, size: 70, align: "right" },
+    footerDate: { x: 2870, y: 4450, maxW: 1400, size: 90, align: "right" },
   },
   rankChange: {
     image: "assets/cert_rank_template.jpg",
