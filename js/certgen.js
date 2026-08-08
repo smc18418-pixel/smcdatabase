@@ -18,9 +18,9 @@ const COORDS = {
     rank:       { x: 2050, y: 1900, maxW: 5600,  size: 90 , align: "center"  },
     date:       { x: 710,  y: 1900, maxW: 4600,  size: 90, align: "right"  },
     code:       { x: 1875, y: 2050, maxW: 4600,  size: 90, align: "right"  },
-    duration:   { x: 1900, y: 2490, maxW: 700,  size: 90, align: "right"  },
-    registeredByName: { x: 2020, y: 3640, maxW: 900, size: 40, align: "right" },
-    registeredByCode: { x: 2020, y: 3750, maxW: 900, size: 40, align: "right" },
+    duration:   { x: 2000, y: 2490, maxW: 700,  size: 90, align: "right"  },
+    registeredByName: { x: 2500, y: 4640, maxW: 900, size: 40, align: "right" },
+    registeredByCode: { x: 2500, y: 4750, maxW: 1800, size: 90, align: "right" },
     footerDate: { x: 2870, y: 4470, maxW: 700, size: 38, align: "right" },
   },
   rankChange: {
