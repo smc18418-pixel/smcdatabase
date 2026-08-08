@@ -14,7 +14,7 @@ const FONT_FAMILY = "'Arial', 'Tahoma', sans-serif";
 const COORDS = {
   register: {
     image: "assets/cert_register_template.jpg",
-    name:       { x: 1654, y: 1650, maxW: 2300, size: 100, align: "center" },
+    name:       { x: 1654, y: 1650, maxW: 23000, size: 100, align: "center" },
     rank:       { x: 1830, y: 1850, maxW: 700,  size: 44, align: "right"  },
     date:       { x: 230,  y: 1850, maxW: 400,  size: 40, align: "right"  },
     code:       { x: 1900, y: 1935, maxW: 620,  size: 44, align: "right"  },
