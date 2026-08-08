@@ -31,7 +31,7 @@ const COORDS = {
     code:       { x: 1900, y: 1935, maxW: 620,  size: 44, align: "right"  },
     promotedByName: { x: 2400, y: 3750, maxW: 1800, size: 90, align: "right" },
     promotedByCode: { x: 2350, y: 4000, maxW: 1800, size: 90, align: "right" },
-    footerDate: { x: 2000, y: 4470, maxW: 700, size: 38, align: "right" },
+    footerDate: { x: 2000, y: 4440, maxW: 700, size: 38, align: "right" },
   },
   card: {
     image: "assets/card_template.jpg",
