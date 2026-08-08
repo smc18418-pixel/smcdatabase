@@ -15,7 +15,7 @@ const COORDS = {
   register: {
     image: "assets/cert_register_template.jpg",
     name:       { x: 1600, y: 1650, maxW: 4600, size: 200, align: "center" },
-    rank:       { x: 1900, y: 1850, maxW: 5600,  size: 90 , align: "center"  },
+    rank:       { x: 1950, y: 1800, maxW: 5600,  size: 90 , align: "center"  },
     date:       { x: 230,  y: 1850, maxW: 400,  size: 40, align: "right"  },
     code:       { x: 1900, y: 1935, maxW: 620,  size: 44, align: "right"  },
     duration:   { x: 1400, y: 2090, maxW: 700,  size: 42, align: "right"  },
