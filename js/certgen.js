@@ -38,7 +38,7 @@ const COORDS = {
     name:    { x: 1050, y: 165,  maxW: 780, size: 80, align: "right", color: "#fff" },
     code:    { x: 950,  y: 315,  maxW: 880, size: 80, align: "right", color: "#fff" },
     phone:   { x: 950,  y: 515,  maxW: 880, size: 80, align: "right", color: "#fff" },
-    joined:  { x: 860,  y: 715,  maxW: 800, size: 80, align: "right", color: "#fff" },
+    joined:  { x: 820,  y: 715,  maxW: 800, size: 80, align: "right", color: "#fff" },
   }
 };
 
