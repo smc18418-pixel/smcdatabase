@@ -32,7 +32,7 @@ const COORDS = {
     duration:   { x: 2450, y: 2740, maxW: 4600,  size: 90, align: "right"  },
     promotedByName: { x: 2400, y: 3750, maxW: 1800, size: 90, align: "right" },
     promotedByCode: { x: 2300, y: 4000, maxW: 1800, size: 90, align: "right" },
-    footerDate: { x: 2000, y: 4450, maxW: 1400, size: 90, align: "right" },
+    footerDate: { x: 2870, y: 4450, maxW: 1400, size: 90, align: "right" },
   },
   card: {
     image: "assets/card_template.jpg",
