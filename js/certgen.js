@@ -68,8 +68,13 @@ function drawFitText(ctx, text, spec) {
 
 function fmtDateArabic(d) {
   const dt = (d instanceof Date) ? d : new Date(d);
-  const months = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
-  return `${dt.getDate()}/ ${months[dt.getMonth()]} /${dt.getFullYear()}`;
+  const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+  
+  const day = dt.getDate(); // اليوم
+  const monthName = months[dt.getMonth()]; // اسم الشهر
+  const year = dt.getFullYear(); // السنة
+
+  return `${day} / ${monthName} / ${year}`;
 }
 
 async function generateRegistrationCertificate(member) {
