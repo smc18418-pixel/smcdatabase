@@ -26,7 +26,7 @@ const COORDS = {
   rankChange: {
     image: "assets/cert_rank_template.jpg",
     name:       { x: 1600, y: 1650, maxW: 4600, size: 200, align: "center" },
-    newRank:    { x: 2300, y: 2050, maxW: 4600,  size: 90, align: "center"  },
+    newRank:    { x: 2200, y: 2050, maxW: 4600,  size: 90, align: "center"  },
     date:       { x: 2300,  y: 2200, maxW: 4600,  size: 90, align: "right"  },
     code:       { x: 1700, y: 2350, maxW: 4600,  size: 90, align: "right"  },
     duration:   { x: 2450, y: 2740, maxW: 4600,  size: 90, align: "right"  },
