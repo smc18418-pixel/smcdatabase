@@ -18,7 +18,7 @@ const COORDS = {
     rank:       { x: 2400, y: 2050, maxW: 4600,  size: 90 , align: "center"  },
     date:       { x: 2300,  y: 2200, maxW: 4600,  size: 90, align: "right"  },
     code:       { x: 1700, y: 2350, maxW: 4600,  size: 90, align: "right"  },
-    duration:   { x: 2450, y: 2760, maxW: 4600,  size: 90, align: "right"  },
+    duration:   { x: 2450, y: 2780, maxW: 4600,  size: 90, align: "right"  },
     registeredByName: { x: 2500, y: 3750, maxW: 1800, size: 90, align: "right" },
     registeredByCode: { x: 2300, y: 4000, maxW: 1800, size: 90, align: "right" },
     footerDate: { x: 2870, y: 4450, maxW: 1400, size: 90, align: "right" },
