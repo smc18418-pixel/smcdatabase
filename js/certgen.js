@@ -74,7 +74,7 @@ function fmtDateArabic(d) {
   const monthName = months[dt.getMonth()]; // اسم الشهر
   const year = dt.getFullYear(); // السنة
 
-  return `${monthName} / ${day} / ${year}`;
+  return `${day} / ${monthName} / ${year}`;
 }
 
 async function generateRegistrationCertificate(member) {
