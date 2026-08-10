@@ -1,10 +1,12 @@
 const session = requireRole("admin");
+const ACTIVE_ADMIN_RANKS = ["A", "A-SA", "A-SAF"];
 
 document.addEventListener("DOMContentLoaded", async () => {
   if (!session) return;
   renderTopbar(session);
   maybeForceInitialPasswordChange(session);
   await loadPasswordResetNotices();
+  await loadAdminVotes();
 
   document.getElementById("searchBtn").onclick = doSearch;
   document.getElementById("searchInput").addEventListener("keydown", e => { if (e.key === "Enter") doSearch(); });
@@ -70,11 +72,15 @@ function showMemberDetail(m) {
   const area = document.getElementById("resultArea");
   const isSelf = m.membership_code === session.member.membership_code;
   const isPermanent = !m.membership_expires_at;
+  // Editing another admin's personal data (name/phone/residence/links) is
+  // blocked — only the admin themself can edit their own data.
+  const isOtherAdmin = !isSelf && ACTIVE_ADMIN_RANKS.includes(m.rank_code);
+
   area.innerHTML = `
     <div class="card">
       ${memberDetailTableHtml(m)}
       <div class="grid-actions">
-        <button class="btn" id="editBtn">تعديل البيانات</button>
+        ${isOtherAdmin ? "" : `<button class="btn" id="editBtn">تعديل البيانات</button>`}
         <button class="btn" id="rankBtn">ترقية / تنزيل</button>
         <button class="btn" id="certBtn">تنزيل الشهادة</button>
         <button class="btn" id="cardBtn">تنزيل البطاقة</button>
@@ -83,7 +89,7 @@ function showMemberDetail(m) {
       </div>
     </div>
   `;
-  document.getElementById("editBtn").onclick = () => showEditForm(m);
+  if (!isOtherAdmin) document.getElementById("editBtn").onclick = () => showEditForm(m);
   document.getElementById("rankBtn").onclick = () => showRankChangeForm(m);
   document.getElementById("certBtn").onclick = async () => {
     const url = await generateRegistrationCertificate(m);
@@ -110,6 +116,10 @@ function doRenew(m) {
 }
 
 function doBanToggle(m) {
+  if (ACTIVE_ADMIN_RANKS.includes(m.rank_code)) {
+    startAdminVote(m.membership_code, "ban", null, `تم بدء تصويت لحظر/إلغاء حظر ${escapeHtml(m.name)}. يحتاج موافقة نصف المسؤولين.`);
+    return;
+  }
   const willBan = m.status !== "banned";
   const title = willBan
     ? `هل أنت متأكد من رغبتك في حظر هذا العضو؟ (${escapeHtml(m.name)} - ${escapeHtml(m.membership_code)})`
@@ -122,6 +132,54 @@ function doBanToggle(m) {
       <button class="btn" id="okBack">رجوع</button>
     `);
     document.getElementById("okBack").onclick = () => { closeModal(); doSearch(); };
+  });
+}
+
+async function startAdminVote(code, action, newRank, successMsg) {
+  const { error } = await sb.rpc("fn_admin_vote_start", { p_token: session.token, p_code: code, p_action: action, p_new_rank: newRank });
+  if (error) { alert(error.message); return; }
+  openModal(`<h3>${successMsg}</h3><button class="btn" id="voteBack">رجوع</button>`);
+  document.getElementById("voteBack").onclick = () => { closeModal(); doSearch(); };
+}
+
+async function loadAdminVotes() {
+  const { data, error } = await sb.rpc("fn_admin_vote_list", { p_token: session.token });
+  let box = document.getElementById("adminVoteArea");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "adminVoteArea";
+    document.getElementById("notifyArea").appendChild(box);
+  }
+  if (error || !data || data.length === 0) { box.innerHTML = ""; return; }
+  box.innerHTML = data.map(v => `
+    <div class="notify-bar">
+      طلب ${v.action === "ban" ? "حظر" : "تنزيل رتبة"} ${escapeHtml(v.target_name)} (${escapeHtml(v.target_code)})
+      ${v.action === "demote" ? `إلى ${rankLabel(v.new_rank)}` : ""}
+      بواسطة ${escapeHtml(v.by_name)} — الموافقون: ${v.yes_count} من ${v.needed}
+      <br>
+      ${v.already_voted ? `<span style="color:#aaa;">لقد صوّتت على هذا الطلب</span>` : `
+        <button class="btn secondary" style="width:auto;display:inline-block;margin-top:8px;padding:6px 12px;" onclick="castAdminVote(${v.id}, true)">موافقة</button>
+        <button class="btn danger" style="width:auto;display:inline-block;margin-top:8px;padding:6px 12px;" onclick="castAdminVote(${v.id}, false)">رفض</button>
+      `}
+      ${v.by_code === session.member.membership_code ? `
+        <button class="btn secondary" style="width:auto;display:inline-block;margin-top:8px;padding:6px 12px;" onclick="cancelAdminVote(${v.id})">إلغاء الطلب</button>
+      ` : ""}
+    </div>
+  `).join("");
+}
+
+async function castAdminVote(id, yes) {
+  const { error } = await sb.rpc("fn_admin_vote_cast", { p_token: session.token, p_id: id, p_yes: yes });
+  if (error) { alert(error.message); return; }
+  loadAdminVotes();
+}
+
+async function cancelAdminVote(id) {
+  confirmModal("هل أنت متأكد من رغبتك في إلغاء هذا الطلب؟", async () => {
+    closeModal();
+    const { error } = await sb.rpc("fn_admin_vote_cancel", { p_token: session.token, p_id: id });
+    if (error) { alert(error.message); return; }
+    loadAdminVotes();
   });
 }
 
@@ -176,8 +234,13 @@ function showRankChangeForm(m) {
     </div>
   `);
   const rankSelect = document.getElementById("newRank");
+  // "Initial password" only makes sense the FIRST time a non-administrative
+  // member becomes admin/supervisor/samurai. If they already hold one of
+  // those roles (and are just moving to a different one), they already
+  // know their password — no field, and no silent password reset here.
   const refreshPwField = () => {
-    document.getElementById("rankPwField").style.display = rankIsLoginCapable(rankSelect.value) ? "block" : "none";
+    const show = !rankIsLoginCapable(m.rank_code) && rankIsLoginCapable(rankSelect.value);
+    document.getElementById("rankPwField").style.display = show ? "block" : "none";
   };
   rankSelect.addEventListener("change", refreshPwField);
   refreshPwField();
@@ -185,15 +248,16 @@ function showRankChangeForm(m) {
   document.getElementById("rankCancel").onclick = closeModal;
   document.getElementById("rankSave").onclick = async () => {
     const newRank = rankSelect.value;
-    const activeAdminRanks = ["A", "A-SA", "A-SAF"];
-    const needsAdminApproval = activeAdminRanks.includes(m.rank_code) && !activeAdminRanks.includes(newRank);
+    const needsAdminApproval = ACTIVE_ADMIN_RANKS.includes(m.rank_code) && !ACTIVE_ADMIN_RANKS.includes(newRank);
 
     if (needsAdminApproval) {
-      showAdminDemoteApprovalForm(m, newRank);
+      closeModal();
+      startAdminVote(m.membership_code, "demote", newRank, `تم بدء تصويت لتنزيل رتبة ${escapeHtml(m.name)} إلى ${rankLabel(newRank)}. يحتاج موافقة نصف المسؤولين.`);
       return;
     }
 
-    const initialPw = rankIsLoginCapable(newRank) ? document.getElementById("rankInitialPw").value : null;
+    const showsPwField = !rankIsLoginCapable(m.rank_code) && rankIsLoginCapable(newRank);
+    const initialPw = showsPwField ? document.getElementById("rankInitialPw").value : null;
     const { data, error } = await sb.rpc("fn_change_rank_with_password", {
       p_token: session.token, p_member_code: m.membership_code, p_new_rank_code: newRank, p_initial_password: initialPw
     });
@@ -202,37 +266,7 @@ function showRankChangeForm(m) {
   };
 }
 
-// Demoting an active admin (A / A-SA / A-SAF) to supervisor-or-lower needs
-// that admin's own consent: they must type their own membership code +
-// password to confirm before the change is applied.
-function showAdminDemoteApprovalForm(m, newRank) {
-  openModal(`
-    <h3>موافقة المسؤول المطلوب تنزيله</h3>
-    <p style="color:#ccc;font-size:.85rem;">لا يمكن تنزيل هذا المسؤول إلا بموافقته. يرجى منه تأكيد رمز عضويته وكلمة السر.</p>
-    <div id="apprMsg"></div>
-    <label>رمز العضوية</label>
-    <input type="text" id="apprCode" value="${escapeHtml(m.membership_code)}">
-    <label>كلمة السر</label>
-    <input type="password" id="apprPassword">
-    <div class="grid-actions">
-      <button class="btn" id="apprOk">موافق</button>
-      <button class="btn secondary" id="apprCancel">تراجع</button>
-    </div>
-  `);
-  document.getElementById("apprCancel").onclick = () => showRankChangeForm(m);
-  document.getElementById("apprOk").onclick = async () => {
-    const confirmCode = document.getElementById("apprCode").value.trim();
-    const confirmPw = document.getElementById("apprPassword").value;
-    const msg = document.getElementById("apprMsg");
-    if (!confirmCode || !confirmPw) { msg.innerHTML = `<div class="msg err">يرجى تعبئة الحقلين</div>`; return; }
-    const { data, error } = await sb.rpc("fn_admin_demote_with_approval", {
-      p_token: session.token, p_member_code: m.membership_code, p_new_rank_code: newRank,
-      p_confirm_code: confirmCode, p_confirm_password: confirmPw
-    });
-    if (error) { msg.innerHTML = `<div class="msg err">${error.message}</div>`; return; }
-    showRankChangeSuccess(data);
-  };
-}
+
 
 function showRankChangeSuccess(data) {
   openModal(`
