@@ -21,10 +21,10 @@ async function doSearch() {
     <div class="card">
       <div class="table-wrap">
       <table class="datatable">
-        <tr><th>رمز العضوية</th><th>الاسم</th><th>رقم الهاتف</th><th>السكن</th></tr>
-        <tr><td>${escapeHtml(m.membership_code)}</td><td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.phone)}</td><td>${escapeHtml(m.residence)}</td></tr>
-        <tr><th>تاريخ التسجيل</th><th colspan="3">الحالة</th></tr>
-        <tr><td>${fmtDateShort(m.registered_at)}</td><td colspan="3">${statusBadge(m.status)}</td></tr>
+        <tr><th>رمز العضوية</th><th>الاسم</th></tr>
+        <tr><td>${escapeHtml(m.membership_code)}</td><td>${escapeHtml(m.name)}</td></tr>
+        <tr><th>تاريخ التسجيل</th><th>الحالة</th></tr>
+        <tr><td>${fmtDateShort(m.registered_at)}</td><td>${statusBadge(m.status)}</td></tr>
       </table>
       </div>
     </div>
@@ -39,13 +39,11 @@ async function showViewAll() {
     <div class="card">
       <div class="table-wrap">
       <table class="datatable">
-        <tr><th>رمز العضوية</th><th>الاسم</th><th>رقم الهاتف</th><th>السكن</th><th>تاريخ التسجيل</th><th>الحالة</th></tr>
+        <tr><th>رمز العضوية</th><th>الاسم</th><th>تاريخ التسجيل</th><th>الحالة</th></tr>
         ${data.map(m => `
           <tr>
             <td>${escapeHtml(m.membership_code)}</td>
             <td>${escapeHtml(m.name)}</td>
-            <td>${escapeHtml(m.phone)}</td>
-            <td>${escapeHtml(m.residence)}</td>
             <td>${fmtDateShort(m.registered_at)}</td>
             <td>${statusBadge(m.status)}</td>
           </tr>`).join("")}
