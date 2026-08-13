@@ -120,6 +120,14 @@ table.datatable tr:nth-child(even) td { background: rgba(255,255,255,.02); }
 
 a.link { color: #ff8080; text-decoration: underline; font-size: .88rem; }
 
+.pw-wrap { position: relative; display: block; }
+.pw-wrap input[type="password"], .pw-wrap input[type="text"] { padding-left: 42px; }
+.pw-eye {
+  position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; font-size: 1.15rem; line-height: 1;
+  cursor: pointer; color: #ccc; padding: 6px;
+}
+
 .grid-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
 .grid-actions .btn { margin-bottom: 0; }
 
