@@ -20,7 +20,8 @@ function renderTopbar(session, opts = {}) {
       <button id="btnLogout">تسجيل الخروج</button>
     </div>
   `;
-  document.getElementById("btnLogout").onclick = () => {
+  document.getElementById("btnLogout").onclick = async () => {
+    await sb.rpc("fn_logout", { p_token: session.token });
     clearSession();
     window.location.href = "index.html";
   };
@@ -146,6 +147,7 @@ function openModal(html) {
   overlay.id = "activeModal";
   overlay.innerHTML = `<div class="modal">${html}</div>`;
   document.body.appendChild(overlay);
+  wirePasswordToggles(overlay);
   return overlay;
 }
 function closeModal() {
