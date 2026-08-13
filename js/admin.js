@@ -54,8 +54,8 @@ function memberDetailTableHtml(m) {
   return `
     <div class="table-wrap">
     <table class="datatable">
-      <tr><th>رمز العضوية</th><th>الاسم</th><th>رقم الهاتف</th><th>السكن</th></tr>
-      <tr><td>${escapeHtml(m.membership_code)}</td><td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.phone)}</td><td>${escapeHtml(m.residence)}</td></tr>
+      <tr><th>رمز العضوية</th><th>الاسم</th><th colspan="2">رقم الهاتف</th></tr>
+      <tr><td>${escapeHtml(m.membership_code)}</td><td>${escapeHtml(m.name)}</td><td colspan="2">${escapeHtml(m.phone)}</td></tr>
       <tr><th>الرتبة</th><th>تاريخ التسجيل</th><th>تاريخ انتهاء العضوية</th><th>الحالة</th></tr>
       <tr><td>${rankLabel(m.rank_code)}</td><td>${fmtDateShort(m.registered_at)}</td><td>${m.membership_expires_at ? fmtDateShort(m.membership_expires_at) : "دائمة"}</td><td>${statusBadge(m.status)}</td></tr>
       <tr><th colspan="2">رابط الفيسبوك</th><th colspan="2">رابط الساموراي</th></tr>
@@ -72,7 +72,7 @@ function showMemberDetail(m) {
   const area = document.getElementById("resultArea");
   const isSelf = m.membership_code === session.member.membership_code;
   const isPermanent = !m.membership_expires_at;
-  // Editing another admin's personal data (name/phone/residence/links) is
+  // Editing another admin's personal data (name/phone/links) is
   // blocked — only the admin themself can edit their own data.
   const isOtherAdmin = !isSelf && ACTIVE_ADMIN_RANKS.includes(m.rank_code);
 
@@ -189,7 +189,6 @@ function showEditForm(m) {
     <div id="editMsg"></div>
     <label>الاسم</label><input type="text" id="eName" value="${escapeHtml(m.name)}">
     <label>رقم الهاتف</label><input type="tel" id="ePhone" value="${escapeHtml(m.phone)}">
-    <label>السكن</label><input type="text" id="eResidence" value="${escapeHtml(m.residence)}">
     <label>رابط حساب الفيسبوك</label><input type="text" id="eFb" value="${escapeHtml(m.facebook_url || "")}">
     <label>رابط حساب الساموراي</label><input type="text" id="eSam" value="${escapeHtml(m.samurai_url || "")}">
     <div class="grid-actions">
@@ -203,7 +202,6 @@ function showEditForm(m) {
       p_token: session.token, p_member_code: m.membership_code,
       p_name: document.getElementById("eName").value.trim(),
       p_phone: document.getElementById("ePhone").value.trim(),
-      p_residence: document.getElementById("eResidence").value.trim(),
       p_facebook: document.getElementById("eFb").value.trim(),
       p_samurai_url: document.getElementById("eSam").value.trim(),
     });
@@ -362,7 +360,6 @@ function showRegisterForm() {
       <div id="regMsg"></div>
       <label>الاسم</label><input type="text" id="rName">
       <label>رقم الهاتف</label><input type="tel" id="rPhone">
-      <label>السكن</label><input type="text" id="rResidence">
       <label>الرتبة</label>
       <select id="rRank">${options}</select>
       <label>رابط حساب الفيسبوك</label><input type="text" id="rFb">
@@ -386,21 +383,21 @@ function showRegisterForm() {
   };
   rankSelect.addEventListener("change", refreshFields);
   refreshFields();
+  wirePasswordToggles(area);
 
   document.getElementById("regCancel").onclick = () => { area.innerHTML = ""; };
   document.getElementById("regSave").onclick = async () => {
     const name = document.getElementById("rName").value.trim();
     const phone = document.getElementById("rPhone").value.trim();
-    const residence = document.getElementById("rResidence").value.trim();
     const rank = rankSelect.value;
     const fb = document.getElementById("rFb").value.trim();
     const sam = rankHasSamuraiField(rank) ? document.getElementById("rSam").value.trim() : null;
     const pass = rankIsLoginCapable(rank) ? document.getElementById("rPass").value : null;
     const msg = document.getElementById("regMsg");
-    if (!name || !phone || !residence) { msg.innerHTML = `<div class="msg err">يرجى تعبئة كل الحقول</div>`; return; }
+    if (!name || !phone) { msg.innerHTML = `<div class="msg err">يرجى تعبئة كل الحقول</div>`; return; }
 
     const { data, error } = await sb.rpc("fn_register_member", {
-      p_token: session.token, p_name: name, p_phone: phone, p_residence: residence,
+      p_token: session.token, p_name: name, p_phone: phone,
       p_rank_code: rank, p_facebook: fb, p_samurai_url: sam, p_initial_password: pass
     });
     if (error) { msg.innerHTML = `<div class="msg err">${error.message}</div>`; return; }
@@ -433,13 +430,12 @@ async function showViewAll() {
     <div class="card">
       <div class="table-wrap">
       <table class="datatable" id="allTable">
-        <tr><th>رمز العضوية</th><th>الاسم</th><th>رقم الهاتف</th><th>السكن</th><th>تاريخ التسجيل</th><th>تاريخ الانتهاء</th><th>الحالة</th></tr>
+        <tr><th>رمز العضوية</th><th>الاسم</th><th>رقم الهاتف</th><th>تاريخ التسجيل</th><th>تاريخ الانتهاء</th><th>الحالة</th></tr>
         ${data.map(m => `
           <tr class="memberRow" data-code="${escapeHtml(m.membership_code)}" style="cursor:pointer;">
             <td>${escapeHtml(m.membership_code)}</td>
             <td>${escapeHtml(m.name)}</td>
             <td>${escapeHtml(m.phone)}</td>
-            <td>${escapeHtml(m.residence)}</td>
             <td>${fmtDateShort(m.registered_at)}</td>
             <td>${m.membership_expires_at ? fmtDateShort(m.membership_expires_at) : "دائمة"}</td>
             <td>${statusBadge(m.status)}</td>
