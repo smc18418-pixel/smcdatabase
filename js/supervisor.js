@@ -21,8 +21,8 @@ async function doSearch() {
     <div class="card">
       <div class="table-wrap">
       <table class="datatable">
-        <tr><th>رمز العضوية</th><th>الاسم</th><th>رقم الهاتف</th><th>السكن</th></tr>
-        <tr><td>${escapeHtml(m.membership_code)}</td><td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.phone)}</td><td>${escapeHtml(m.residence)}</td></tr>
+        <tr><th>رمز العضوية</th><th>الاسم</th><th colspan="2">رقم الهاتف</th></tr>
+        <tr><td>${escapeHtml(m.membership_code)}</td><td>${escapeHtml(m.name)}</td><td colspan="2">${escapeHtml(m.phone)}</td></tr>
         <tr><th>الرتبة</th><th>تاريخ التسجيل</th><th>تاريخ الانتهاء</th><th>الحالة</th></tr>
         <tr><td>${rankLabel(m.rank_code)}</td><td>${fmtDateShort(m.registered_at)}</td><td>${m.membership_expires_at ? fmtDateShort(m.membership_expires_at) : "دائمة"}</td><td>${statusBadge(m.status)}</td></tr>
         <tr><th colspan="4">تم تسجيله بواسطة</th></tr>
@@ -55,13 +55,12 @@ async function showViewAll() {
     <div class="card">
       <div class="table-wrap">
       <table class="datatable">
-        <tr><th>رمز العضوية</th><th>الاسم</th><th>رقم الهاتف</th><th>السكن</th><th>الرتبة</th><th>تاريخ التسجيل</th><th>تاريخ الانتهاء</th><th>الحالة</th><th>مسجل بواسطة</th></tr>
+        <tr><th>رمز العضوية</th><th>الاسم</th><th>رقم الهاتف</th><th>الرتبة</th><th>تاريخ التسجيل</th><th>تاريخ الانتهاء</th><th>الحالة</th><th>مسجل بواسطة</th></tr>
         ${data.map(m => `
           <tr>
             <td>${escapeHtml(m.membership_code)}</td>
             <td>${escapeHtml(m.name)}</td>
             <td>${escapeHtml(m.phone)}</td>
-            <td>${escapeHtml(m.residence)}</td>
             <td>${rankLabel(m.rank_code)}</td>
             <td>${fmtDateShort(m.registered_at)}</td>
             <td>${m.membership_expires_at ? fmtDateShort(m.membership_expires_at) : "دائمة"}</td>
