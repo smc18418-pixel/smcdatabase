@@ -1,4 +1,5 @@
 function initLoginPage(role, roleLabel, redirectTo) {
+  wirePasswordToggles(document);
   const form = document.getElementById("loginForm");
   const msgBox = document.getElementById("msgBox");
   const forgotLink = document.getElementById("forgotLink");
@@ -110,6 +111,7 @@ function initLoginPage(role, roleLabel, redirectTo) {
         <button class="btn secondary" id="fgCancel">رجوع</button>
       </div>
     `;
+    wirePasswordToggles(forgotModalBox);
     document.getElementById("fgCancel").onclick = closeForgot;
     document.getElementById("fgSet").onclick = async () => {
       const p1 = document.getElementById("fgNew").value;
